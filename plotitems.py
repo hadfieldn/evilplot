@@ -122,6 +122,7 @@ class Function(PlotItem):
             raise TypeError('Wrong dimensionality. Function must be f(x) or f(x,y)')
 
     def samples(self, dim, domain):
+        from util import min_ifexists
         from numpy import linspace
         # Note that self.dim is a property of the function and dim is a
         # property of the plot.
@@ -394,19 +395,6 @@ class External(PlotItem):
         self.xmax = xmax
         self.ymin = ymin
         self.ymax = ymax
-
-
-
-########################################################################
-### HELPER FUNCTIONS
-
-def min_ifexists(a, b):
-    if a is None:
-        return b
-    elif b is None:
-        return a
-    else:
-        return min(a, b)
 
 
 ########################################################################

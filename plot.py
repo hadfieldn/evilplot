@@ -185,6 +185,7 @@ class Plot(ParamObj, list):
             given_xmin, given_xmax, given_ymin, given_ymax = \
             self.xmin, self.xmax, self.ymin, self.ymax
         if xmin is None or xmax is None or ymin is None or ymax is None:
+            from util import min_ifexists
             for item in self:
                 if given_xmin is None:
                     xmin = min_ifexists(xmin, item.xmin)
