@@ -216,3 +216,5 @@ if __name__ == '__main__':
     p.append(Function(lambda x: x**2))
     p.show()
     p.write(filename='plottest.gpi')
+
+# vim: et sw=4 sts=4

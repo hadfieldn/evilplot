@@ -12,3 +12,4 @@ def min_ifexists(a, b):
     else:
         return min(a, b)
 
+# vim: et sw=4 sts=4
