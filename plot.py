@@ -88,9 +88,9 @@ class Plot(ParamObj, list):
         
         The window will persist.
         """
-        import Gnuplot
+        from Gnuplot.gp import GnuplotProcess
         self.write_items()
-        gp = Gnuplot.GnuplotProcess(persist=True)
+        gp = GnuplotProcess(persist=True)
         gp.write(str(self))
         gp.flush()
 
