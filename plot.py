@@ -30,6 +30,7 @@ class Plot(ParamObj, list):
             zmin=Param(doc='Minimum z value'),
             zmax=Param(doc='Maximum z value'),
             xtics=Param(doc='Dictionary mapping ints to labels for x axis'),
+            ytics=Param(doc='Dictionary mapping ints to labels for y axis'),
             boxwidth=Param(doc='Box width when style is boxes'),
             xlogscale=Param(doc='Use this log scale for x (0 for normal scale)', default=0),
             ylogscale=Param(doc='Use this log scale for y (0 for normal scale)', default=0),
@@ -133,6 +134,11 @@ class Plot(ParamObj, list):
             ticstr = ', '.join('"%s" %s' % (val, key)
                     for key, val in self.xtics.iteritems())
             s += 'set xtics (%s)\n' % ticstr
+        if self.ytics:
+            # example: 'set ytics ("low" 0, "medium" 50, "high" 100)'
+            ticstr = ', '.join('"%s" %s' % (val, key)
+                    for key, val in self.ytics.iteritems())
+            s += 'set ytics (%s)\n' % ticstr
         if self.boxwidth:
             s += 'set boxwidth %s\n' % (self.boxwidth)
         # We always want to plot lines between two points that are outside the
