@@ -73,6 +73,7 @@ class PlotItem(ParamObj):
         datalines.append('e\n')
         return '\n'.join(datalines)
 
+
 class Function(PlotItem):
     """
     This is a PlotItem that can be passed to a plot object.  It takes a
@@ -156,6 +157,7 @@ class Function(PlotItem):
                     data.append(sample)
                 data.append(None)
         return data
+
 
 class Histogram(PlotItem):
     """
@@ -405,5 +407,8 @@ if __name__ == '__main__':
     p.append(function(lambda x: x**2))
     p.show()
     p.write(gpifilename='plottest.gpi')
+
+
+__all__ = ['Function', 'Histogram', 'Density', 'Points', 'Vectors', 'External']
 
 # vim: et sw=4 sts=4

@@ -223,4 +223,7 @@ if __name__ == '__main__':
     p.show()
     p.write(filename='plottest.gpi')
 
+
+__all__ = ['Plot']
+
 # vim: et sw=4 sts=4
