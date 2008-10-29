@@ -311,8 +311,10 @@ class Points(PlotItem):
 
 
 class Vectors(PlotItem):
-    """
-    Just print some simple points.  Give me a list of tuples.
+    """Plots a set of vectors based on (x1, y1, x2, y2) tuples.
+
+    If endpoints is specified, x2 and y2 indicate the tip of the arrow.
+    Otherwise, x2 and y2 indicate the delta.
 
     todo: look more at "set clip" and at "arrowstyle"
     """
