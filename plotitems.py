@@ -310,6 +310,26 @@ class Points(PlotItem):
         return l
 
 
+class RawData(PlotItem):
+    """A plot item for arbitrary 2D data.
+    
+    RawData is especially useful for specialized styles such as errorbars or
+    candlesticks.
+    """
+    def __init__(self, pointlist, **kwds):
+        super(RawData, self).__init__(**kwds)
+        self.pointlist = pointlist
+
+        if 'xmin' not in kwds:
+            self.xmin = min(x[0] for x in self.pointlist)
+        if 'xmax' not in kwds:
+            self.xmax = max(x[0] for x in self.pointlist)
+
+    def samples(self, dim, domain):
+        xmin, xmax, ymin, ymax = domain
+        return [x for x in self.pointlist if (x[0] >= xmin and x[0] <= xmax)]
+
+
 class Vectors(PlotItem):
     """Plots a set of vectors based on (x1, y1, x2, y2) tuples.
 
@@ -367,13 +387,25 @@ class Vectors(PlotItem):
             return self.pointlist
 
 
+#class Candlesticks(PlotItem):
+#    """Plots a candlesticks a.k.a. box and whiskers plot from 5-tuples."""
+#    _params = dict(
+#        boxwidth=Param(default=None, doc='Width of box in candlesticks.'),
+#        whiskerbars=Param(default=False,
+#            doc='Whether to draw bars at the ends of the whiskers.'),
+#        )
+
+
 class External(PlotItem):
     """A PlotItem for plotting data from an external data file.
 
     Right now we assume that dims = 2
     """
 
-    _params = dict(fields=Param(default=None, doc='Which fields of the file to use (using). note: 1-indexed'))
+    _params = dict(
+        fields=Param(default=None,
+            doc='Which fields of the file to use (using). note: 1-indexed')
+        )
 
     def __init__(self, filename, **kwds):
         super(External, self).__init__(**kwds)
@@ -433,6 +465,7 @@ if __name__ == '__main__':
     p.write(gpifilename='plottest.gpi')
 
 
-__all__ = ['Function', 'Histogram', 'Density', 'Points', 'Vectors', 'External']
+__all__ = ['Function', 'Histogram', 'Density', 'Points', 'RawData', 'Vectors',
+        'External']
 
 # vim: et sw=4 sts=4
