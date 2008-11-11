@@ -65,9 +65,9 @@ class PlotItem(ParamObj):
         else:
             s += ' notitle'
         s += ' with %s' % self.style
-        if self.style in ('lines', 'linespoints'):
+        if self.style in ('lines', 'linespoints', 'errorbars'):
             s += ' lw %s' % self.linewidth
-        if self.style in ('linespoints', 'points'):
+        if self.style in ('linespoints', 'points', 'errorbars'):
             s += ' ps %s' % self.pointsize
         if self.pointtype:
             s += ' pt %s' % self.pointtype
