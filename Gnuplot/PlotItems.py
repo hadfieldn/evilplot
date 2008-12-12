@@ -85,8 +85,8 @@ class PlotItem:
     _option_list = {
         'axes' : lambda self, axes: self.set_string_option(
             'axes', axes, None, 'axes %s'),
-        'with' : lambda self, with: self.set_string_option(
-            'with', with, None, 'with %s'),
+        'with' : lambda self, using: self.set_string_option(
+            'with', using, None, 'with %s'),
         'title' : lambda self, title: self.set_string_option(
             'title', title, 'notitle', 'title "%s"'),
         }
