@@ -117,6 +117,17 @@ class Plot(ParamObj, list):
         gp.write(str(self))
         gp.flush()
 
+    def print_page(self):
+        """Create a postscript file and send it to lpr for printing."""
+        from subprocess import Popen, PIPE
+        self.write_items()
+        gp = Popen(('gnuplot'), stdin=PIPE, stdout=PIPE)
+        lpr = Popen(('lpr'), stdin=gp.stdout, close_fds=True)
+        gp.stdin.write('set terminal postscript\n')
+        gp.stdin.write(str(self))
+        gp.stdin.close()
+        gp.wait()
+
     def __str__(self):
         """Return the entire gnuplot file as a string.
         """
