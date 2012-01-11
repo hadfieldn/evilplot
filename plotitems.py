@@ -24,15 +24,17 @@
 """Individual items that can be plotted."""
 
 from __future__ import division
-from param import Param, ParamObj
+
 from itertools import imap
+from param import Param, ParamObj
+import sys
 
 
 class PlotItem(ParamObj):
     """
     This is a basic PlotItem class that needs to be extended to be useful.
     """
-    _params = dict(filename=Param(default='-', doc="Where to write data; '-' is inline"),
+    _params = dict(filename=Param(default='', doc="Where to write data; '' is automatic"),
             dim=Param(doc="Dimensionality; either 2 or 3"),
             title=Param(doc='Title in the key for this PlotItem'),
             xmin=Param(doc='Minimum x value'),
@@ -53,7 +55,7 @@ class PlotItem(ParamObj):
     def command(self, dim):
         """Return the command to plot this PlotItem.
         """
-        s = "'" + self.filename + "'"
+        s = "'%s'" % (self.filename if self.filename else '-')
         try:
             s += ' ' + self.using
         except AttributeError:
@@ -92,8 +94,27 @@ class PlotItem(ParamObj):
             else:
                 line = ''
             datalines.append(line)
-        datalines.append('e\n')
+        datalines.append('e')
         return '\n'.join(datalines)
+
+    def write(self, dim, domain, filename=None):
+        """Write out the data to a file.
+
+        Open up a file (or stdout if no filename is specified) and write
+        out the data to a file.
+        """
+        if filename:
+            out = open(filename, 'w')
+        else:
+            out = sys.stdout
+
+        try:
+            for values in self.samples(dim, domain):
+                if values is not None:
+                    print >>out, ' '.join(imap(str, values))
+        finally:
+            if filename:
+                out.close()
 
 
 class Function(PlotItem):

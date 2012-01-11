@@ -67,7 +67,7 @@ class Plot(ParamObj, list):
         self.given_dim = None
         ParamObj.__init__(self, **kwds)
 
-    def write_items(self):
+    def write_items_gpi(self):
         """Write out data files for plot.
 
         For any PlotItems not set to output to stdout, write to the file
@@ -76,15 +76,29 @@ class Plot(ParamObj, list):
         dim = self.dim
         domain = self.domain()
         for item in self:
-            if (not item.external_datafile) and (item.filename != '-'):
+            if (not item.external_datafile) and (item.filename):
                 out = open(item.filename, 'w')
                 try:
                     print >> out, item.data(dim, domain)
                 finally:
                     out.close()
 
+    def write_gpi(self, filename):
+        """Write out a gnuplot file.
+
+        Open up a file and write out the gnuplot file.
+        """
+        if len(self) == 0:
+            return
+
+        self.write_items_gpi()
+
+        with open(filename, 'w') as f:
+            print >>f, self._write_gpi_file(f)
+
+    # DEPRECATED:
     def write(self, filename=None):
-        """Write out the gnuplot file to a file.
+        """Write out a gnuplot file. (DEPRECATED)
 
         Open up a file (or stdout if no filename is specified) and write
         out the gnuplot file.
@@ -92,7 +106,7 @@ class Plot(ParamObj, list):
         if len(self) == 0:
             return
 
-        self.write_items()
+        self.write_items_gpi()
 
         if filename:
             out = open(filename, 'w')
@@ -101,7 +115,7 @@ class Plot(ParamObj, list):
             out = sys.stdout
 
         try:
-            print >> out, self
+            self._write_gpi_file(out)
         finally:
             if filename:
                 out.close()
@@ -112,23 +126,23 @@ class Plot(ParamObj, list):
         The window will persist.
         """
         from Gnuplot.gp import GnuplotProcess
-        self.write_items()
+        self.write_items_gpi()
         gp = GnuplotProcess(persist=True)
-        gp.write(str(self))
+        self._write_gpi_file(gp)
         gp.flush()
 
     def print_page(self):
         """Create a postscript file and send it to lpr for printing."""
         from subprocess import Popen, PIPE
-        self.write_items()
+        self.write_items_gpi()
         gp = Popen(('gnuplot'), stdin=PIPE, stdout=PIPE)
         lpr = Popen(('lpr'), stdin=gp.stdout, close_fds=True)
         gp.stdin.write('set terminal postscript\n')
-        gp.stdin.write(str(self))
+        self._write_gpi_file(gp.stdin)
         gp.stdin.close()
         gp.wait()
 
-    def __str__(self):
+    def _write_gpi_file(self, f):
         """Return the entire gnuplot file as a string.
         """
         assert(len(self) != 0)
@@ -149,56 +163,90 @@ class Plot(ParamObj, list):
 
         s = ''
         if dim == 3:
-            s += 'set pm3d explicit\n'
+            print >>f, 'set pm3d explicit'
         if self.title:
-            s += 'set title "%s"\n' % self.title
+            print >>f, 'set title "%s"' % self.title
         if self.xlabel:
-            s += 'set xlabel "%s"\n' % self.xlabel
+            print >>f, 'set xlabel "%s"' % self.xlabel
         if self.ylabel:
-            s += 'set ylabel "%s"\n' % self.ylabel
+            print >>f, 'set ylabel "%s"' % self.ylabel
         if self.xlogscale:
-            s += 'set logscale x %s\n' % self.xlogscale
+            print >>f, 'set logscale x %s' % self.xlogscale
         if self.ylogscale:
-            s += 'set logscale y %s\n' % self.ylogscale
+            print >>f, 'set logscale y %s' % self.ylogscale
         if self.key:
-            s += 'set key %s\n' % self.key
+            print >>f, 'set key %s' % self.key
         if self.xtics:
             # example: 'set xtics ("low" 0, "medium" 50, "high" 100)'
             ticstr = ', '.join('"%s" %s' % (val, key)
                     for key, val in self.xtics.iteritems())
-            s += 'set xtics (%s)\n' % ticstr
+            print >>f, 'set xtics (%s)' % ticstr
         if self.ytics:
             # example: 'set ytics ("low" 0, "medium" 50, "high" 100)'
             ticstr = ', '.join('"%s" %s' % (val, key)
                     for key, val in self.ytics.iteritems())
-            s += 'set ytics (%s)\n' % ticstr
+            print >>f, 'set ytics (%s)' % ticstr
         if self.boxwidth:
-            s += 'set boxwidth %s\n' % (self.boxwidth)
+            print >>f, 'set boxwidth %s' % (self.boxwidth)
         # We always want to plot lines between two points that are outside the
         # range of the graph:
-        s += 'set clip two\n'
+        print >>f, 'set clip two'
         if self.ratio:
-            s += 'set size ratio %s\n' % (self.ratio)
+            print >>f, 'set size ratio %s' % (self.ratio)
         # The plot command:
         if dim == 2:
-            s += 'plot [%s:%s] ' % domain[0:2]
+            print >>f, 'plot [%s:%s]' % domain[0:2],
         else:
-            s += 'splot [%s:%s] [%s:%s] ' % domain
+            print >>f, 'splot [%s:%s] [%s:%s]' % domain,
         # Specifying the range is optional.
         if rmin is not None or rmax is not None:
-            s += '['
-            if rmin is not None:
-                s += str(rmin)
-            s += ':'
-            if rmax is not None:
-                s += str(rmax)
-            s += '] '
-        s += ', '.join([item.command(dim) for item in self])
-        s += '\n'
+            min_str = str(rmin) if (rmin is not None) else ''
+            max_str = str(rmax) if (rmax is not None) else ''
+            print >>f, '[%s:%s]' % (min_str, max_str),
+        print >>f, ', '.join([item.command(dim) for item in self])
         for item in self:
-            if item.filename == '-':
-                s += item.data(dim, domain)
-        return s
+            if not item.filename:
+                print >>f, item.data(dim, domain)
+
+    def write_items_dat(self, basename):
+        """Write out data files for plot.
+
+        Returns a list of filenames.
+        """
+        dim = self.dim
+        domain = self.domain()
+        filenames = []
+        for i, item in enumerate(self):
+            if item.external_datafile:
+                filenames.append(item.filename)
+            else:
+                filename = item.filename
+                if not filename:
+                    filename = '%s-%s.dat' % (basename, i)
+                filenames.append(filename)
+
+                with open(filename, 'w') as f:
+                    print >>f, item.data(dim, domain)
+        return filenames
+
+    def _write_pgf_file(self, f):
+        """Write out a PGF/TikZ (TeX) file."""
+        # TODO
+
+    def write_pgf(self, filename):
+        """Write out a PGF/TikZ (TeX) file.
+
+        If `filename` is not specified, then the Plot's `name` attribute is
+        used to autogenerate filenames.
+        """
+        if len(self) == 0:
+            return
+
+        basename = os.path.basename(filename)
+        datafiles = self.write_items_dat(basename)
+
+        with open(filename, 'w') as f:
+            print >>f, self._write_pgf_file(f)
 
     def get_dim(self):
         if self.given_dim is not None:
@@ -210,8 +258,10 @@ class Plot(ParamObj, list):
                     dim = 3
                     break
             return dim
+
     def set_dim(self, value):
         self.given_dim = value
+
     dim = property(fget = get_dim, fset = set_dim)
 
     def domain(self):
