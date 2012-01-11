@@ -99,7 +99,7 @@ class Plot(ParamObj, list):
         self.write_items_gpi()
 
         with open(filename, 'w') as f:
-            print >>f, self._write_gpi_file(f)
+            self._write_gpi_file(f)
 
     # DEPRECATED:
     def write(self, filename=None):
@@ -262,9 +262,9 @@ class Plot(ParamObj, list):
         params.append('width=2.6in,')
         params.append('height=2.2in,')
         if self.xlabel:
-            params.append('xlabel=%s,' % self.xlabel)
+            params.append('xlabel={\small %s},' % self.xlabel)
         if self.ylabel:
-            params.append('ylabel=%s,' % self.ylabel)
+            params.append('ylabel={\small %s},' % self.ylabel)
         if xmin:
             params.append('xmin=%s,' % xmin)
         if xmax:
@@ -308,7 +308,7 @@ class Plot(ParamObj, list):
         datafiles = self.write_items_dat(basename)
 
         with open(filename, 'w') as f:
-            print >>f, self._write_pgf_file(f, datafiles)
+            self._write_pgf_file(f, datafiles)
 
     def get_dim(self):
         if self.given_dim is not None:

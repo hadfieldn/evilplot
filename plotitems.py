@@ -104,6 +104,8 @@ class PlotItem(ParamObj):
         # Legend
         if self.title:
             legend = r'\small %s' % self.title
+            #legend = r'\footnotesize %s' % self.title
+            #legend = self.title
             lines.append(r'\addlegendentry{%s}' % legend)
 
         return '\n'.join(lines)
