@@ -92,7 +92,7 @@ class PlotItem(ParamObj):
         if self.style == 'lines':
             opts.append('mark=none')
 
-        indices = ['x index=1', 'y index=2']
+        indices = ['x index=0', 'y index=1']
         # self.using, self.style
         #if self.style in ('lines', 'linespoints', 'errorbars'):
         #if self.style in ('linespoints', 'points', 'errorbars'):
@@ -130,7 +130,6 @@ class PlotItem(ParamObj):
             else:
                 line = ''
             datalines.append(line)
-        datalines.append('e')
         return '\n'.join(datalines)
 
     def write(self, dim, domain, filename=None):

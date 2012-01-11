@@ -211,6 +211,7 @@ class Plot(ParamObj, list):
         for item in self:
             if not item.filename:
                 print >>f, item.data(dim, domain)
+                print >>f, 'e'
 
     def write_items_dat(self, basename):
         """Write out data files for plot.
@@ -247,7 +248,14 @@ class Plot(ParamObj, list):
         xmin, xmax, ymin, ymax = self.domain()
 
         print >>f, r'\begin{tikzpicture}'
-        print >>f, r'\begin{axis}['
+        if self.xlogscale and self.ylogscale:
+            print >>f, r'\begin{loglogaxis}['
+        elif self.xlogscale:
+            print >>f, r'\begin{semilogxaxis}['
+        elif self.ylogscale:
+            print >>f, r'\begin{semilogyaxis}['
+        else:
+            print >>f, r'\begin{axis}['
 
         params = []
         params.append('small,')
@@ -277,7 +285,14 @@ class Plot(ParamObj, list):
         for item, datafile in izip(self, datafiles):
             print >>f, item.pgf_command(dim, datafile)
 
-        print >>f, r'\end{axis}'
+        if self.xlogscale and self.ylogscale:
+            print >>f, r'\end{loglogaxis}['
+        elif self.xlogscale:
+            print >>f, r'\begin{semilogxaxis}['
+        elif self.ylogscale:
+            print >>f, r'\begin{semilogyaxis}['
+        else:
+            print >>f, r'\end{axis}['
         print >>f, r'\end{tikzpicture}'
 
     def write_pgf(self, filename):
