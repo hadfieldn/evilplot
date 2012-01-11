@@ -74,7 +74,7 @@ class PlotItem(ParamObj):
             s += ' pt %s' % self.pointtype
         return s
 
-    def pgf_command(self, dim, filename):
+    def pgf_command(self, dim, filename, opts=None, indices=None):
         """Return the PGF command to plot this PlotItem.
 
         Note that only a subset of options are currently supported.
@@ -85,17 +85,16 @@ class PlotItem(ParamObj):
 
         s = "'%s'" % (self.filename if self.filename else '-')
 
-        opts = []
-        if self.smooth:
-            opts.append('smooth')
+        if not opts:
+            opts = []
+            if self.smooth:
+                opts.append('smooth')
 
-        if self.style == 'lines':
-            opts.append('mark=none')
+            if self.style == 'lines':
+                opts.append('mark=none')
 
-        indices = ['x index=0', 'y index=1']
-        # self.using, self.style
-        #if self.style in ('lines', 'linespoints', 'errorbars'):
-        #if self.style in ('linespoints', 'points', 'errorbars'):
+        if not indices:
+            indices = ['x index=0', 'y index=1']
 
         opts = ','.join(opts)
         indices = ','.join(indices)
@@ -105,9 +104,7 @@ class PlotItem(ParamObj):
         # Legend
         if self.title:
             legend = r'\small %s' % self.title
-        else:
-            legend = ''
-        lines.append(r'\addlegendentry{%s}' % legend)
+            lines.append(r'\addlegendentry{%s}' % legend)
 
         return '\n'.join(lines)
 
@@ -385,6 +382,22 @@ class RawData(PlotItem):
         xmin, xmax, ymin, ymax = domain
         return [x for x in self.pointlist if (x[0] >= xmin and x[0] <= xmax)]
 
+    def pgf_command(self, dim, filename):
+        opts = ['forget plot', 'mark=none', 'error bars/.cd', 'y explicit']
+        indices = ['x index=0', 'y index=1']
+
+        plus_opts = opts + ['y dir=plus']
+        plus_indices = indices + [r'y error expr=\thisrowno{3}-\thisrowno{1}']
+        plus_str = super(RawData, self).pgf_command(dim, filename, plus_opts,
+                plus_indices)
+
+        minus_opts = opts + ['y dir=minus']
+        minus_indices = indices + [r'y error expr=\thisrowno{1}-\thisrowno{2}']
+        minus_str = super(RawData, self).pgf_command(dim, filename, minus_opts,
+                minus_indices)
+
+        return '%s\n%s' % (plus_str, minus_str)
+
 
 class Vectors(PlotItem):
     """Plots a set of vectors based on (x1, y1, x2, y2) tuples.
@@ -424,7 +437,7 @@ class Vectors(PlotItem):
                 self.xmax = max(x[0] for x in self.pointlist)
 
     def gpi_command(self, dim):
-        s = super(Vectors, self).command(dim)
+        s = super(Vectors, self).gpi_command(dim)
         if self.heads == 0:
             s += ' nohead'
         elif self.heads == 1:
@@ -441,15 +454,6 @@ class Vectors(PlotItem):
             return [(x1, y1, x2-x1, y2-y1) for x1, y1, x2, y2 in self.pointlist]
         else:
             return self.pointlist
-
-
-#class Candlesticks(PlotItem):
-#    """Plots a candlesticks a.k.a. box and whiskers plot from 5-tuples."""
-#    _params = dict(
-#        boxwidth=Param(default=None, doc='Width of box in candlesticks.'),
-#        whiskerbars=Param(default=False,
-#            doc='Whether to draw bars at the ends of the whiskers.'),
-#        )
 
 
 class External(PlotItem):
