@@ -26,6 +26,11 @@
 # TODO: add an implicit_y to allow plotting more kinds of 2d objects in 3d.
 
 from __future__ import division
+
+from itertools import izip
+import os
+import sys
+
 from param import Param, ParamObj
 
 # Normally we try to get the domain from the user or from PlotItems.  However,
@@ -111,7 +116,6 @@ class Plot(ParamObj, list):
         if filename:
             out = open(filename, 'w')
         else:
-            import sys
             out = sys.stdout
 
         try:
@@ -145,7 +149,7 @@ class Plot(ParamObj, list):
     def _write_gpi_file(self, f):
         """Return the entire gnuplot file as a string.
         """
-        assert(len(self) != 0)
+        assert(len(self) != 0), 'No plot items have been added.'
 
         dim = self.dim
         assert(dim == 2 or dim == 3)
@@ -203,13 +207,16 @@ class Plot(ParamObj, list):
             min_str = str(rmin) if (rmin is not None) else ''
             max_str = str(rmax) if (rmax is not None) else ''
             print >>f, '[%s:%s]' % (min_str, max_str),
-        print >>f, ', '.join([item.command(dim) for item in self])
+        print >>f, ', '.join([item.gpi_command(dim) for item in self])
         for item in self:
             if not item.filename:
                 print >>f, item.data(dim, domain)
 
     def write_items_dat(self, basename):
         """Write out data files for plot.
+
+        The specified basename (e.g., 'path/to/file') is used to generate
+        filenames (e.g., 'path/to/file-1.dat').
 
         Returns a list of filenames.
         """
@@ -229,9 +236,49 @@ class Plot(ParamObj, list):
                     print >>f, item.data(dim, domain)
         return filenames
 
-    def _write_pgf_file(self, f):
+    def _write_pgf_file(self, f, datafiles):
         """Write out a PGF/TikZ (TeX) file."""
-        # TODO
+
+        assert(len(self) != 0), 'No plot items have been added.'
+
+        dim = self.dim
+        assert dim == 2, 'Only 2D plots currently supported in PGF mode.'
+
+        xmin, xmax, ymin, ymax = self.domain()
+
+        print >>f, r'\begin{tikzpicture}'
+        print >>f, r'\begin{axis}['
+
+        params = []
+        params.append('small,')
+        params.append('width=2.6in,')
+        params.append('height=2.2in,')
+        if self.xlabel:
+            params.append('xlabel=%s,' % self.xlabel)
+        if self.ylabel:
+            params.append('ylabel=%s,' % self.ylabel)
+        if xmin:
+            params.append('xmin=%s,' % xmin)
+        if xmax:
+            params.append('xmax=%s,' % xmax)
+        if ymin:
+            params.append('ymin=%s,' % ymin)
+        if ymax:
+            params.append('ymax=%s,' % ymax)
+        params.append('%cycle list name=linestyles, % black and white')
+        params.append('%legend pos=north west,')
+        params.append('legend cell align=left,')
+        params.append('xlabel near ticks,')
+        params.append('ylabel near ticks,')
+        params.append(']')
+        print >>f, '   ', '\n    '.join(params)
+        print >>f
+
+        for item, datafile in izip(self, datafiles):
+            print >>f, item.pgf_command(dim, datafile)
+
+        print >>f, r'\end{axis}'
+        print >>f, r'\end{tikzpicture}'
 
     def write_pgf(self, filename):
         """Write out a PGF/TikZ (TeX) file.
@@ -242,11 +289,11 @@ class Plot(ParamObj, list):
         if len(self) == 0:
             return
 
-        basename = os.path.basename(filename)
+        basename, _ = os.path.splitext(filename)
         datafiles = self.write_items_dat(basename)
 
         with open(filename, 'w') as f:
-            print >>f, self._write_pgf_file(f)
+            print >>f, self._write_pgf_file(f, datafiles)
 
     def get_dim(self):
         if self.given_dim is not None:

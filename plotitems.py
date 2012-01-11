@@ -52,9 +52,8 @@ class PlotItem(ParamObj):
         ParamObj.__init__(self, **kwds)
         self.external_datafile = False
 
-    def command(self, dim):
-        """Return the command to plot this PlotItem.
-        """
+    def gpi_command(self, dim):
+        """Return the gnuplot command to plot this PlotItem."""
         s = "'%s'" % (self.filename if self.filename else '-')
         try:
             s += ' ' + self.using
@@ -74,6 +73,43 @@ class PlotItem(ParamObj):
         if self.pointtype:
             s += ' pt %s' % self.pointtype
         return s
+
+    def pgf_command(self, dim, filename):
+        """Return the PGF command to plot this PlotItem.
+
+        Note that only a subset of options are currently supported.
+        """
+        assert dim == 2, 'Only 2D currently supported in PGF mode'
+
+        lines = []
+
+        s = "'%s'" % (self.filename if self.filename else '-')
+
+        opts = []
+        if self.smooth:
+            opts.append('smooth')
+
+        if self.style == 'lines':
+            opts.append('mark=none')
+
+        indices = ['x index=1', 'y index=2']
+        # self.using, self.style
+        #if self.style in ('lines', 'linespoints', 'errorbars'):
+        #if self.style in ('linespoints', 'points', 'errorbars'):
+
+        opts = ','.join(opts)
+        indices = ','.join(indices)
+        line = r'\addplot +[%s] table[%s] {%s};' % (opts, indices, filename)
+        lines.append(line)
+
+        # Legend
+        if self.title:
+            legend = r'\small %s' % self.title
+        else:
+            legend = ''
+        lines.append(r'\addlegendentry{%s}' % legend)
+
+        return '\n'.join(lines)
 
     def samples(self, dim, domain):
         """Return a list of sample points for a given domain min/max.
@@ -388,7 +424,7 @@ class Vectors(PlotItem):
             else:
                 self.xmax = max(x[0] for x in self.pointlist)
 
-    def command(self, dim):
+    def gpi_command(self, dim):
         s = super(Vectors, self).command(dim)
         if self.heads == 0:
             s += ' nohead'
