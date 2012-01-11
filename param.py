@@ -135,7 +135,7 @@ class ParamObj:
     >>> m.__doc__
     'A small rodent, very similar to a hare, which feeds on grass
     and burrows in the earth.
-    
+
     weight: Body Weight (default=42)'
     >>> m.weight
     42

@@ -35,7 +35,7 @@ DEFAULT_DOMAIN = (0.0, 1.0) * 2
 
 class Plot(ParamObj, list):
     """A plot which can be output and which is container of plot items.
-    
+
     It's a list--add PlotItems to it.  Use plot.write("filename.gpi") to print
     to a file or plot.write() to send to standard out.  Use plot.show() to
     open an x11 window in Gnuplot.
@@ -85,7 +85,7 @@ class Plot(ParamObj, list):
 
     def write(self, filename=None):
         """Write out the gnuplot file to a file.
-        
+
         Open up a file (or stdout if no filename is specified) and write
         out the gnuplot file.
         """
@@ -108,7 +108,7 @@ class Plot(ParamObj, list):
 
     def show(self):
         """Open a gnuplot process and plot to the screen.
-        
+
         The window will persist.
         """
         from Gnuplot.gp import GnuplotProcess

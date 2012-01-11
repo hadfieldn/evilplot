@@ -210,7 +210,7 @@ class Histogram(PlotItem):
         xmax = domain[1]
 
         width = (xmax - xmin) / float(self.nbuckets)
-        
+
         buckets = [0 for i in xrange(self.nbuckets)]
         total = 0
         for x in self.datalist:
@@ -312,7 +312,7 @@ class Points(PlotItem):
 
 class RawData(PlotItem):
     """A plot item for arbitrary 2D data.
-    
+
     RawData is especially useful for specialized styles such as errorbars or
     candlesticks.
     """
