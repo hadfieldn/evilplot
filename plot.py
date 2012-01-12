@@ -48,6 +48,7 @@ class Plot(ParamObj, list):
     _params = dict(dim=Param(doc='Dimensionality: 2D->plot, 3D->splot,'
                                 + 'None->Autodetect.'),
             title=Param(doc='Title of the plot'),
+            color=Param(doc='Whether to use color (vs. B&W)', default=True),
             xlabel=Param(doc='Label for the x axis'),
             ylabel=Param(doc='Label for the y axis'),
             xmin=Param(doc='Minimum x value'),
@@ -248,14 +249,7 @@ class Plot(ParamObj, list):
         xmin, xmax, ymin, ymax = self.domain()
 
         print >>f, r'\begin{tikzpicture}'
-        if self.xlogscale and self.ylogscale:
-            print >>f, r'\begin{loglogaxis}['
-        elif self.xlogscale:
-            print >>f, r'\begin{semilogxaxis}['
-        elif self.ylogscale:
-            print >>f, r'\begin{semilogyaxis}['
-        else:
-            print >>f, r'\begin{axis}['
+        print >>f, r'\begin{axis}['
 
         params = []
         params.append('small,')
@@ -273,11 +267,34 @@ class Plot(ParamObj, list):
             params.append('ymin=%s,' % ymin)
         if ymax:
             params.append('ymax=%s,' % ymax)
-        params.append('%cycle list name=linestyles, % black and white')
+        if not self.color:
+            params.append('cycle list name=linestyles, % black and white')
         params.append('%legend pos=north west,')
         params.append('legend cell align=left,')
+        if self.xtics:
+            ticks = []
+            labels = []
+            for key, value in self.xtics.iteritems():
+                ticks.append(str(key))
+                labels.append(str(value))
+            params.append('xtick={%s},' % ','.join(ticks))
+            params.append('xticklabels={%s},' % ','.join(labels))
+        if self.ytics:
+            ticks = []
+            labels = []
+            for key, value in self.ytics.iteritems():
+                ticks.append(str(key))
+                labels.append(str(value))
+            params.append('ytick={%s},' % ','.join(ticks))
+            params.append('yticklabels={%s},' % ','.join(labels))
         params.append('xlabel near ticks,')
         params.append('ylabel near ticks,')
+        if self.xlogscale:
+            params.append('xmode=log,')
+            params.append('log basis x=%s,' % self.xlogscale)
+        if self.ylogscale:
+            params.append('ymode=log,')
+            params.append('log basis y=%s,' % self.ylogscale)
         params.append(']')
         print >>f, '   ', '\n    '.join(params)
         print >>f
@@ -285,14 +302,7 @@ class Plot(ParamObj, list):
         for item, datafile in izip(self, datafiles):
             print >>f, item.pgf_command(dim, datafile)
 
-        if self.xlogscale and self.ylogscale:
-            print >>f, r'\end{loglogaxis}['
-        elif self.xlogscale:
-            print >>f, r'\begin{semilogxaxis}['
-        elif self.ylogscale:
-            print >>f, r'\begin{semilogyaxis}['
-        else:
-            print >>f, r'\end{axis}['
+        print >>f, r'\end{axis}['
         print >>f, r'\end{tikzpicture}'
 
     def write_pgf(self, filename):

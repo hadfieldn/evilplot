@@ -370,6 +370,9 @@ class RawData(PlotItem):
 
     RawData is especially useful for specialized styles such as errorbars or
     candlesticks.
+
+    Not that error bars should be plotted _before_ the associated plot to
+    ensure that the same colors get used in PGFPlots.
     """
     def __init__(self, pointlist, **kwds):
         super(RawData, self).__init__(**kwds)
