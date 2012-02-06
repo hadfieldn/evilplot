@@ -27,6 +27,9 @@ Anything that subclasses ParamObj will be an object for which _params is
 a special directory of Param objects.
 """
 
+from six import with_metaclass
+
+
 #TODO: make it so that you can put None in your dictionary to cancel out
 # a parameter defined in one of your superclasses.
 
@@ -38,6 +41,7 @@ class ParamError(Exception):
     def __str__(self):
         return 'Class %s has no parameter "%s"' % (self.clsname, self.paramname)
 
+
 class Param(object):
     """A Parameter with name, default value, and documentation.
 
@@ -46,6 +50,7 @@ class Param(object):
     def __init__(self, default=None, doc=None):
         self.default = default
         self.doc = doc
+
 
 class ParamMeta(type):
     """A metaclass that lets you define params.
@@ -111,7 +116,8 @@ class ParamMeta(type):
         # Create and return the new class
         return type.__new__(cls, classname, bases, classdict)
 
-class ParamObj:
+
+class ParamObj(with_metaclass(ParamMeta)):
     """An object that treats "_params" specially.
 
     An object of class ParamObj may contain a dictionary named _params.  This
@@ -143,8 +149,6 @@ class ParamObj:
     >>> m.weight
     12
     """
-
-    __metaclass__ = ParamMeta
 
 
 __all__ = [ParamObj, Param]

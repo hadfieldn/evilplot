@@ -42,10 +42,10 @@ either as arguments during instantiation or as attributes at a later time.
 
 """
 
-import plot
-from plot import *
-import plotitems
-from plotitems import *
+from . import plot
+from .plot import *
+from . import plotitems
+from .plotitems import *
 
 if __name__ == '__main__':
     import doctest

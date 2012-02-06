@@ -24,10 +24,16 @@
 """Individual items that can be plotted."""
 
 from __future__ import division
+from __future__ import print_function
 
-from itertools import imap
-from param import Param, ParamObj
 import sys
+
+from .param import Param, ParamObj
+
+try:
+    from itertools import imap as map
+except ImportError:
+    pass
 
 
 class PlotItem(ParamObj):
@@ -125,7 +131,7 @@ class PlotItem(ParamObj):
         datalines = []
         for values in self.samples(dim, domain):
             if values is not None:
-                line = ' '.join(imap(str, values))
+                line = ' '.join(map(str, values))
             else:
                 line = ''
             datalines.append(line)
@@ -145,7 +151,7 @@ class PlotItem(ParamObj):
         try:
             for values in self.samples(dim, domain):
                 if values is not None:
-                    print >>out, ' '.join(imap(str, values))
+                    print(' '.join(map(str, values)), file=out)
         finally:
             if filename:
                 out.close()

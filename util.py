@@ -33,4 +33,12 @@ def min_ifexists(a, b):
     else:
         return min(a, b)
 
+def max_ifexists(a, b):
+    if a is None:
+        return b
+    elif b is None:
+        return a
+    else:
+        return max(a, b)
+
 # vim: et sw=4 sts=4

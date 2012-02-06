@@ -26,17 +26,24 @@
 # TODO: add an implicit_y to allow plotting more kinds of 2d objects in 3d.
 
 from __future__ import division
+from __future__ import print_function
 
-from itertools import izip
 import os
 import sys
 
-from param import Param, ParamObj
+from .param import Param, ParamObj
+from . import util
+
+try:
+    from itertools import izip as zip
+except ImportError:
+    pass
 
 # Normally we try to get the domain from the user or from PlotItems.  However,
 # if nothing is specified, we should at least try something.  Recall that
 # a domain is (xmin, xmax, ymin, ymax).
 DEFAULT_DOMAIN = (0.0, 1.0) * 2
+
 
 class Plot(ParamObj, list):
     """A plot which can be output and which is container of plot items.
@@ -85,7 +92,7 @@ class Plot(ParamObj, list):
             if (not item.external_datafile) and (item.filename):
                 out = open(item.filename, 'w')
                 try:
-                    print >> out, item.data(dim, domain)
+                    print(item.data(dim, domain), file=out)
                 finally:
                     out.close()
 
@@ -130,7 +137,7 @@ class Plot(ParamObj, list):
 
         The window will persist.
         """
-        from Gnuplot.gp import GnuplotProcess
+        from .Gnuplot.gp import GnuplotProcess
         self.write_items_gpi()
         gp = GnuplotProcess(persist=True)
         self._write_gpi_file(gp)
@@ -168,51 +175,51 @@ class Plot(ParamObj, list):
 
         s = ''
         if dim == 3:
-            print >>f, 'set pm3d explicit'
+            print('set pm3d explicit', file=f)
         if self.title:
-            print >>f, 'set title "%s"' % self.title
+            print('set title "%s"' % self.title, file=f)
         if self.xlabel:
-            print >>f, 'set xlabel "%s"' % self.xlabel
+            print('set xlabel "%s"' % self.xlabel, file=f)
         if self.ylabel:
-            print >>f, 'set ylabel "%s"' % self.ylabel
+            print('set ylabel "%s"' % self.ylabel, file=f)
         if self.xlogscale:
-            print >>f, 'set logscale x %s' % self.xlogscale
+            print('set logscale x %s' % self.xlogscale, file=f)
         if self.ylogscale:
-            print >>f, 'set logscale y %s' % self.ylogscale
+            print('set logscale y %s' % self.ylogscale, file=f)
         if self.key:
-            print >>f, 'set key %s' % self.key
+            print('set key %s' % self.key, file=f)
         if self.xtics:
             # example: 'set xtics ("low" 0, "medium" 50, "high" 100)'
             ticstr = ', '.join('"%s" %s' % (val, key)
                     for key, val in self.xtics.iteritems())
-            print >>f, 'set xtics (%s)' % ticstr
+            print('set xtics (%s)' % ticstr, file=f)
         if self.ytics:
             # example: 'set ytics ("low" 0, "medium" 50, "high" 100)'
             ticstr = ', '.join('"%s" %s' % (val, key)
                     for key, val in self.ytics.iteritems())
-            print >>f, 'set ytics (%s)' % ticstr
+            print('set ytics (%s)' % ticstr, file=f)
         if self.boxwidth:
-            print >>f, 'set boxwidth %s' % (self.boxwidth)
+            print('set boxwidth %s' % (self.boxwidth), file=f)
         # We always want to plot lines between two points that are outside the
         # range of the graph:
-        print >>f, 'set clip two'
+        print('set clip two', file=f)
         if self.ratio:
-            print >>f, 'set size ratio %s' % (self.ratio)
+            print('set size ratio %s' % (self.ratio), file=f)
         # The plot command:
         if dim == 2:
-            print >>f, 'plot [%s:%s]' % domain[0:2],
+            print('plot [%s:%s]' % domain[0:2], end='', file=f)
         else:
-            print >>f, 'splot [%s:%s] [%s:%s]' % domain,
+            print('splot [%s:%s] [%s:%s]' % domain, end='', file=f)
         # Specifying the range is optional.
         if rmin is not None or rmax is not None:
             min_str = str(rmin) if (rmin is not None) else ''
             max_str = str(rmax) if (rmax is not None) else ''
-            print >>f, '[%s:%s]' % (min_str, max_str),
-        print >>f, ', '.join([item.gpi_command(dim) for item in self])
+            print('[%s:%s]' % (min_str, max_str), end='', file=f)
+        print(', '.join([item.gpi_command(dim) for item in self]), file=f)
         for item in self:
             if not item.filename:
-                print >>f, item.data(dim, domain)
-                print >>f, 'e'
+                print(item.data(dim, domain), file=f)
+                print('e', file=f)
 
     def write_items_dat(self, basename):
         """Write out data files for plot.
@@ -235,7 +242,7 @@ class Plot(ParamObj, list):
                 filenames.append(filename)
 
                 with open(filename, 'w') as f:
-                    print >>f, item.data(dim, domain)
+                    print(item.data(dim, domain), file=f)
         return filenames
 
     def _write_pgf_file(self, f, datafiles):
@@ -248,8 +255,8 @@ class Plot(ParamObj, list):
 
         xmin, xmax, ymin, ymax = self.domain()
 
-        print >>f, r'\begin{tikzpicture}'
-        print >>f, r'\begin{axis}['
+        print(r'\begin{tikzpicture}', file=f)
+        print(r'\begin{axis}[', file=f)
 
         params = []
         params.append('small,')
@@ -296,14 +303,14 @@ class Plot(ParamObj, list):
             params.append('ymode=log,')
             params.append('log basis y=%s,' % self.ylogscale)
         params.append(']')
-        print >>f, '   ', '\n    '.join(params)
+        print('   ', '\n    '.join(params), file=f)
         print >>f
 
-        for item, datafile in izip(self, datafiles):
-            print >>f, item.pgf_command(dim, datafile)
+        for item, datafile in zip(self, datafiles):
+            print(item.pgf_command(dim, datafile), file=f)
 
-        print >>f, r'\end{axis}['
-        print >>f, r'\end{tikzpicture}'
+        print(r'\end{axis}[', file=f)
+        print(r'\end{tikzpicture}', file=f)
 
     def write_pgf(self, filename):
         """Write out a PGF/TikZ (TeX) file.
@@ -346,17 +353,16 @@ class Plot(ParamObj, list):
             given_xmin, given_xmax, given_ymin, given_ymax = \
             self.xmin, self.xmax, self.ymin, self.ymax
         if xmin is None or xmax is None or ymin is None or ymax is None:
-            from util import min_ifexists
             for item in self:
                 if given_xmin is None:
-                    xmin = min_ifexists(xmin, item.xmin)
+                    xmin = util.min_ifexists(xmin, item.xmin)
                 if given_xmax is None:
-                    xmax = max(xmax, item.xmax)
+                    xmax = util.max_ifexists(xmax, item.xmax)
                 if item.dim == 3:
                     if given_ymin is None:
-                        ymin = min_ifexists(ymin, item.ymin)
+                        ymin = util.min_ifexists(ymin, item.ymin)
                     if given_ymax is None:
-                        ymax = max(ymax, item.ymax)
+                        ymax = util.max_ifexists(ymax, item.ymax)
         if xmin is None:
             xmin = DEFAULT_DOMAIN[0]
         if xmax is None:
