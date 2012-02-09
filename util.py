@@ -41,4 +41,12 @@ def max_ifexists(a, b):
     else:
         return max(a, b)
 
+def frange(start, stop, step):
+    n = int((stop - start) / step)
+    x = start
+    for i in xrange(n):
+        yield x
+        x += step
+    yield stop
+
 # vim: et sw=4 sts=4

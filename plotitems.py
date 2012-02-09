@@ -29,6 +29,7 @@ from __future__ import print_function
 import sys
 
 from .param import Param, ParamObj
+from .util import frange, min_ifexists
 
 try:
     from itertools import imap as map
@@ -206,8 +207,6 @@ class Function(PlotItem):
             raise TypeError('Wrong dimensionality. Function must be f(x) or f(x,y)')
 
     def samples(self, dim, domain):
-        from util import min_ifexists
-        from numpy import linspace
         # Note that self.dim is a property of the function and dim is a
         # property of the plot.
         xmin = max(domain[0], self.xmin)
@@ -218,15 +217,15 @@ class Function(PlotItem):
         data = []
         # Gnuplot requires that we loop through y before x.
         if dim == 2:
-            for x in linspace(xmin, xmax, self.resolution):
+            for x in frange(xmin, xmax, self.resolution):
                 if self.pass_as_tuple:
                     sample = x, self.f((x))
                 else:
                     sample = x, self.f(x)
                 data.append(sample)
         elif dim == 3:
-            for y in linspace(ymin, ymax, self.resolution):
-                for x in linspace(xmin, xmax, self.resolution):
+            for y in frange(ymin, ymax, self.resolution):
+                for x in frange(xmin, xmax, self.resolution):
                     if self.dim == 2:
                         if self.pass_as_tuple:
                             sample = x, y, self.f((x))
@@ -324,12 +323,11 @@ class Density(PlotItem):
             self.xmax = max(draws)
 
     def samples(self, dim, domain):
-        from numpy import linspace
         assert(dim == 2)
         xmin = domain[0]
         xmax = domain[1]
         from scipy.stats.kde import gaussian_kde
-        xvalues = linspace(xmin, xmax, self.resolution)
+        xvalues = frange(xmin, xmax, self.resolution)
         pdf = gaussian_kde(self.draws)
         yvalues = pdf(xvalues)
         return list(zip(xvalues, yvalues))
