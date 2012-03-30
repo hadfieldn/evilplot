@@ -304,7 +304,7 @@ class Plot(ParamObj, list):
             params.append('log basis y=%s,' % self.ylogscale)
         params.append(']')
         print('   ', '\n    '.join(params), file=f)
-        print >>f
+        print(file=f)
 
         for item, datafile in zip(self, datafiles):
             print(item.pgf_command(dim, datafile), file=f)
