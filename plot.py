@@ -71,6 +71,8 @@ class Plot(ParamObj, list):
             ylogscale=Param(doc='Use this log scale for y (0 for normal scale)', default=0),
             key=Param(doc='Move the key.  Example: key="bottom right"'),
             ratio=Param(doc='Size ratio (relative scale): set to 1 for square'),
+            width=Param(doc='Width (only used in pgfplots)', default='2.6in'),
+            height=Param(doc='Width (only used in pgfplots)', default='2.2in'),
             )
 
     # Note that xmin, xmax, ymin, ymax don't take any PlotItems into account.
@@ -260,8 +262,8 @@ class Plot(ParamObj, list):
 
         params = []
         params.append('small,')
-        params.append('width=2.6in,')
-        params.append('height=2.2in,')
+        params.append('width=%s,' % self.width)
+        params.append('height=%s,' % self.height)
         if self.xlabel:
             params.append('xlabel={\small %s},' % self.xlabel)
         if self.ylabel:
@@ -276,7 +278,10 @@ class Plot(ParamObj, list):
             params.append('ymax=%s,' % ymax)
         if not self.color:
             params.append('cycle list name=linestyles, % black and white')
-        params.append('%legend pos=north west,')
+        if self.key:
+            params.append('legend pos=%s,' % self.key)
+        else:
+            params.append('%legend pos=north west,')
         params.append('legend cell align=left,')
         if self.xtics:
             ticks = []
