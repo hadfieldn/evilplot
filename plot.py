@@ -268,13 +268,13 @@ class Plot(ParamObj, list):
             params.append('xlabel={\small %s},' % self.xlabel)
         if self.ylabel:
             params.append('ylabel={\small %s},' % self.ylabel)
-        if xmin:
+        if xmin is not None:
             params.append('xmin=%s,' % xmin)
-        if xmax:
+        if xmax is not None:
             params.append('xmax=%s,' % xmax)
-        if ymin:
+        if ymin is not None:
             params.append('ymin=%s,' % ymin)
-        if ymax:
+        if ymax is not None:
             params.append('ymax=%s,' % ymax)
         if not self.color:
             params.append('cycle list name=linestyles, % black and white')
