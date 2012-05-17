@@ -44,7 +44,16 @@ def max_ifexists(a, b):
 def frange(start, stop, step):
     n = int((stop - start) / step)
     x = start
-    for i in xrange(n):
+    for i in xrange(n-1):
+        yield x
+        x += step
+    yield stop
+
+def linspace(start, stop, n):
+    """Yields `n` floats starting with `start` and ending with `stop`."""
+    step = (stop - start) / (n - 1)
+    x = start
+    for i in xrange(n-1):
         yield x
         x += step
     yield stop

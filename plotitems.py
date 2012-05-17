@@ -29,7 +29,7 @@ from __future__ import print_function
 import sys
 
 from .param import Param, ParamObj
-from .util import frange, min_ifexists
+from .util import linspace, min_ifexists
 
 try:
     from itertools import imap as map
@@ -217,15 +217,15 @@ class Function(PlotItem):
         data = []
         # Gnuplot requires that we loop through y before x.
         if dim == 2:
-            for x in frange(xmin, xmax, self.resolution):
+            for x in linspace(xmin, xmax, self.resolution):
                 if self.pass_as_tuple:
                     sample = x, self.f((x))
                 else:
                     sample = x, self.f(x)
                 data.append(sample)
         elif dim == 3:
-            for y in frange(ymin, ymax, self.resolution):
-                for x in frange(xmin, xmax, self.resolution):
+            for y in linspace(ymin, ymax, self.resolution):
+                for x in linspace(xmin, xmax, self.resolution):
                     if self.dim == 2:
                         if self.pass_as_tuple:
                             sample = x, y, self.f((x))
@@ -327,7 +327,7 @@ class Density(PlotItem):
         xmin = domain[0]
         xmax = domain[1]
         from scipy.stats.kde import gaussian_kde
-        xvalues = frange(xmin, xmax, self.resolution)
+        xvalues = list(linspace(xmin, xmax, self.resolution))
         pdf = gaussian_kde(self.draws)
         yvalues = pdf(xvalues)
         return list(zip(xvalues, yvalues))
