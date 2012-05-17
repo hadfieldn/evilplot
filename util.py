@@ -25,6 +25,8 @@
 
 from __future__ import division
 
+from six.moves import xrange as range
+
 def min_ifexists(a, b):
     if a is None:
         return b
@@ -44,7 +46,7 @@ def max_ifexists(a, b):
 def frange(start, stop, step):
     n = int((stop - start) / step)
     x = start
-    for i in xrange(n-1):
+    for i in range(n-1):
         yield x
         x += step
     yield stop
@@ -53,7 +55,7 @@ def linspace(start, stop, n):
     """Yields `n` floats starting with `start` and ending with `stop`."""
     step = (stop - start) / (n - 1)
     x = start
-    for i in xrange(n-1):
+    for i in range(n-1):
         yield x
         x += step
     yield stop

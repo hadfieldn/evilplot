@@ -26,10 +26,11 @@
 from __future__ import division
 from __future__ import print_function
 
+from six.moves import xrange as range
 import sys
 
 from .param import Param, ParamObj
-from .util import linspace, min_ifexists
+from .util import linspace, min_ifexists, max_ifexists
 
 try:
     from itertools import imap as map
@@ -209,9 +210,9 @@ class Function(PlotItem):
     def samples(self, dim, domain):
         # Note that self.dim is a property of the function and dim is a
         # property of the plot.
-        xmin = max(domain[0], self.xmin)
+        xmin = max_ifexists(domain[0], self.xmin)
         xmax = min_ifexists(domain[1], self.xmax)
-        ymin = max(domain[2], self.ymin)
+        ymin = max_ifexists(domain[2], self.ymin)
         ymax = min_ifexists(domain[3], self.ymax)
 
         data = []
@@ -271,7 +272,7 @@ class Histogram(PlotItem):
 
         width = (xmax - xmin) / float(self.nbuckets)
 
-        buckets = [0 for i in xrange(self.nbuckets)]
+        buckets = [0 for i in range(self.nbuckets)]
         total = 0
         for x in self.datalist:
             if x >= xmin and x <= xmax:
@@ -290,7 +291,7 @@ class Histogram(PlotItem):
 
         minbucketcenter = xmin + width/2
         return [(minbucketcenter + i * width, buckets[i] * scale, width) \
-                    for i in xrange(self.nbuckets)]
+                    for i in range(self.nbuckets)]
 
 
 class Density(PlotItem):
