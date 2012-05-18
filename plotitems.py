@@ -273,7 +273,6 @@ class Histogram(PlotItem):
         width = (xmax - xmin) / float(self.nbuckets)
 
         buckets = [0 for i in range(self.nbuckets)]
-        total = 0
         for x in self.datalist:
             if x >= xmin and x <= xmax:
                 i = int((x-xmin)/width)
@@ -282,10 +281,9 @@ class Histogram(PlotItem):
                 if i == self.nbuckets:
                     i -= 1
                 buckets[i] += 1
-                total += 1
 
         if self.normalize:
-            scale = 1 / (width * total)
+            scale = 1 / (width * len(self.datalist))
         else:
             scale = 1
 
