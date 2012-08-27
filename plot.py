@@ -314,7 +314,7 @@ class Plot(ParamObj, list):
         for item, datafile in zip(self, datafiles):
             print(item.pgf_command(dim, datafile), file=f)
 
-        print(r'\end{axis}[', file=f)
+        print(r'\end{axis}', file=f)
         print(r'\end{tikzpicture}', file=f)
 
     def write_pgf(self, filename):
